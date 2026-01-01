@@ -4,7 +4,7 @@ export function activate(context: vscode.ExtensionContext) {
 	console.log('dash extension activated');
 
 	// SET PROJECT DIR
-	const setDash = vscode.commands.registerCommand('dash.setDash', async () => {
+	const setDash = vscode.commands.registerCommand('woop.setDash', async () => {
 		const input = await vscode.window.showInputBox({
 			placeHolder: 'Paste absolute project directory path'
 		});
@@ -16,7 +16,7 @@ export function activate(context: vscode.ExtensionContext) {
 	});
 
 	// VIEW CURRENT DIR
-	const viewDash = vscode.commands.registerCommand('dash.view', () => {
+	const viewDash = vscode.commands.registerCommand('woop.view', () => {
 		const path = context.globalState.get<string>('projectDir');
 
 		if (!path) {
@@ -30,7 +30,7 @@ export function activate(context: vscode.ExtensionContext) {
 	});
 
 	// MAIN COMMAND
-	const dash = vscode.commands.registerCommand('dash.dash', async () => {
+	const dash = vscode.commands.registerCommand('woop.dash', async () => {
 		const path = context.globalState.get<string>('projectDir');
 
 		if (!path) {

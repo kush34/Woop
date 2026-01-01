@@ -1,8 +1,9 @@
 {
-  "name": "dash",
-  "displayName": "dash",
+  "name": "woop",
+  "displayName": "woop",
+  "publisher": "chattkush",
   "description": "",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "engines": {
     "vscode": "^1.107.0"
   },
@@ -14,15 +15,15 @@
   "contributes": {
     "commands": [
       {
-        "command": "dash.view",
+        "command": "woop.view",
         "title": "View Project Dir"
       },
       {
-        "command": "dash.dash",
+        "command": "woop.dash",
         "title": "dash.dash: Open a Project"
       },
       {
-        "command": "dash.setDash",
+        "command": "woop.setDash",
         "title": "Set Project Dir"
       }
     ]
