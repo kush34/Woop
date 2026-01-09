@@ -7,7 +7,7 @@
     "type": "git",
     "url": "git+https://github.com/kush/Woop.git"
   },
-  "version": "0.0.3",
+  "version": "0.1.3",
   "engines": {
     "vscode": "^1.107.0"
   },
@@ -17,10 +17,36 @@
   "activationEvents": [],
   "main": "./out/extension.js",
   "contributes": {
+    "menus": {
+      "statusBar/context": [
+        {
+          "command": "woop.dashGUI",
+          "when": "true",
+          "group": "navigation"
+        },
+        {
+          "command": "woop.view",
+          "when": "true",
+          "group": "navigation"
+        }
+      ]
+    },
     "commands": [
       {
         "command": "woop.view",
         "title": "View Project Dir"
+      },
+      {
+        "command": "woop.setCmd",
+        "title": "Set Cmd for the current Project"
+      },
+      {
+        "command": "woop.noti",
+        "title": "Notify"
+      },
+      {
+        "command": "woop.dashGUI",
+        "title": "dashGUI"
       },
       {
         "command": "woop.dash",
