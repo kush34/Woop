@@ -2,12 +2,13 @@
   "name": "woop",
   "displayName": "woop",
   "publisher": "chattkush",
-  "description": "",
+  "description": "Project launcher for VS Code",
+  "icon": "icon.png",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/kush/Woop.git"
   },
-  "version": "0.1.3",
+  "version": "0.1.4",
   "engines": {
     "vscode": "^1.107.0"
   },
@@ -55,6 +56,10 @@
       {
         "command": "woop.setDash",
         "title": "Set Project Dir"
+      },
+      {
+        "command": "woop.removeProjectDir",
+        "title": "Remove Project Dir"
       }
     ]
   },

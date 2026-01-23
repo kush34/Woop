@@ -8,72 +8,74 @@ type StoredCmd = {
 
 type StoredCmdMap = Record<string, StoredCmd>;
 
-
 export function activate(context: vscode.ExtensionContext) {
-	console.log('dash extension activated');
+	console.log('woop extension activated');
+
+	/* ------------------ STATE MIGRATION ------------------ */
+
+	const storedProjectDir = context.globalState.get<any>('projectDir');
+	if (typeof storedProjectDir === 'string') {
+		context.globalState.update('projectDir', [storedProjectDir]);
+	}
+
+	/* ------------------ STATUS BAR MENU ------------------ */
 
 	const statusBarItem = vscode.window.createStatusBarItem(
 		vscode.StatusBarAlignment.Right,
 		100
 	);
 
-	statusBarItem.text = "$(send)";
-	statusBarItem.tooltip = "Click me";
-	statusBarItem.command = "woop.menu";
+	statusBarItem.text = '$(send)';
+	statusBarItem.tooltip = 'Woop Menu';
+	statusBarItem.command = 'woop.menu';
 	statusBarItem.show();
 
 	let statusItems: vscode.StatusBarItem[] = [];
 
+	/* ------------------ SET STATUS COMMAND ------------------ */
+
 	const setProjectCmds = vscode.commands.registerCommand(
-		"woop.setCmd",
+		'woop.setCmd',
 		async () => {
 			const label = await vscode.window.showInputBox({
-				prompt: "Status bar label",
-				placeHolder: "Backend",
+				prompt: 'Status bar label',
+				placeHolder: 'Backend',
 			});
-
 			if (!label) return;
 
 			const cmd = await vscode.window.showInputBox({
-				prompt: "Command to run",
-				placeHolder: "npm run dev",
+				prompt: 'Command to run',
+				placeHolder: 'npm run dev',
 			});
-
 			if (!cmd) return;
 
 			const dir = await vscode.window.showInputBox({
-				prompt: "Choose the project dir inside which to run the cmd or / for current lvl",
-				placeHolder: "/"
-			})
+				prompt:
+					'Directory to run command in (absolute path or "/" for current)',
+				placeHolder: '/',
+			});
 			if (!dir) return;
 
-			const key = label.toLowerCase().replace(/\s+/g, "_");
+			const key = label.toLowerCase().replace(/\s+/g, '_');
 
 			const existing =
-				context.globalState.get<StoredCmdMap>("woop.cmds") ?? {};
+				context.globalState.get<StoredCmdMap>('woop.cmds') ?? {};
 
-			existing[key] = {
-				label,
-				command: cmd,
-				directory: dir
-			};
+			existing[key] = { label, command: cmd, directory: dir };
 
-			await context.globalState.update("woop.cmds", existing);
-
-			vscode.window.showInformationMessage(
-				`Command "${label}" added to status bar`
-			);
-
-			createStatusBarItems(context);
+			await context.globalState.update('woop.cmds', existing);
+			createStatusBarItems();
 		}
 	);
 
-	function createStatusBarItems(context: vscode.ExtensionContext) {
+	/* ------------------ STATUS BAR ITEMS ------------------ */
+
+	function createStatusBarItems() {
 		statusItems.forEach(i => i.dispose());
 		statusItems = [];
 
 		const cmds =
-			context.globalState.get<StoredCmdMap>("woop.cmds") ?? {};
+			context.globalState.get<StoredCmdMap>('woop.cmds') ?? {};
 
 		for (const key of Object.keys(cmds)) {
 			const { label, command, directory } = cmds[key];
@@ -85,16 +87,15 @@ export function activate(context: vscode.ExtensionContext) {
 			item.text = `$(terminal) ${label}`;
 			item.tooltip = command;
 
-			// build final shell command ONCE
 			const finalCommand =
-				directory && directory !== "/"
+				directory && directory !== '/'
 					? `cd "${directory}" && ${command}`
 					: command;
 
 			item.command = {
-				command: "woop.runCmd",
-				title: "Run Command",
-				arguments: [finalCommand],
+				command: 'woop.runCmd',
+				title: 'Run Command',
+				arguments: [finalCommand, label],
 			};
 
 			item.show();
@@ -102,11 +103,14 @@ export function activate(context: vscode.ExtensionContext) {
 		}
 	}
 
+	/* ------------------ RUN CMD ------------------ */
 
 	const runCmd = vscode.commands.registerCommand(
-		"woop.runCmd",
+		'woop.runCmd',
 		async (command: string, label: string) => {
-		let terminal = vscode.window.terminals.find(t => t.name === label);
+			let terminal = vscode.window.terminals.find(
+				t => t.name === label
+			);
 
 			if (!terminal) {
 				terminal = vscode.window.createTerminal(label);
@@ -117,147 +121,197 @@ export function activate(context: vscode.ExtensionContext) {
 		}
 	);
 
-	const menu = vscode.commands.registerCommand("woop.menu", async () => {
+	/* ------------------ MENU ------------------ */
+
+	const menu = vscode.commands.registerCommand('woop.menu', async () => {
 		const choice = await vscode.window.showQuickPick(
 			[
-				{
-					label: "📂 Select Project Directory",
-					description: "Set project folder",
-					action: "dashGUI",
-				},
-				{
-					label: "▶ view project Dir",
-					description: "Notifys you the path for project dir set",
-					action: "view",
-				},
+				{ label: '➕ Add Project Directory', action: 'add' },
+				{ label: '➖ Remove Project Directory', action: 'remove' },
+				{ label: '📋 View Project Directories', action: 'view' },
 			],
 			{
-				title: "Woop Menu",
-				placeHolder: "Choose an action",
+				title: 'Woop Menu',
+				placeHolder: 'Choose an action',
 			}
 		);
 
-		if (!choice) return; 
+		if (!choice) return;
+
 		switch (choice.action) {
-			case "dashGUI":
-				vscode.commands.executeCommand("woop.dashGUI");
+			case 'add':
+				vscode.commands.executeCommand('woop.dashGUI');
 				break;
-			case "view":
-				vscode.commands.executeCommand("woop.view");
+			case 'remove':
+				vscode.commands.executeCommand('woop.removeProjectDir');
+				break;
+			case 'view':
+				vscode.commands.executeCommand('woop.view');
 				break;
 		}
 	});
 
-	const dashGUI = vscode.commands.registerCommand('woop.dashGUI', async () => {
-		const result = await vscode.window.showOpenDialog({
-			canSelectFiles: false,
-			canSelectFolders: true,
-			canSelectMany: false,
-			openLabel: "Select Project Folder",
-		});
+	/* ------------------ ADD PROJECT DIR (GUI) ------------------ */
 
-		// user cancelled → do nothing
-		if (!result || result.length === 0) return;
+	const dashGUI = vscode.commands.registerCommand(
+		'woop.dashGUI',
+		async () => {
+			const result = await vscode.window.showOpenDialog({
+				canSelectFiles: false,
+				canSelectFolders: true,
+				canSelectMany: false,
+				openLabel: 'Select Project Folder',
+			});
 
-		const projectDir = result[0].fsPath;
+			if (!result?.length) return;
 
-		await context.globalState.update("projectDir", projectDir);
+			const dir = result[0].fsPath;
+			const existing = context.globalState.get<string[]>(
+				'projectDir',
+				[]
+			);
 
-		vscode.window.showInformationMessage(
-			`Project directory set: ${projectDir}`
-		);
-	})
-	// SET PROJECT DIR
-	const setDash = vscode.commands.registerCommand('woop.setDash', async () => {
-		const input = await vscode.window.showInputBox({
-			placeHolder: 'Paste absolute project directory path'
-		});
+			if (!existing.includes(dir)) {
+				await context.globalState.update('projectDir', [
+					...existing,
+					dir,
+				]);
+			}
+		}
+	);
 
-		if (!input || !input.trim()) return;
+	/* ------------------ REMOVE PROJECT DIR ------------------ */
 
-		await context.globalState.update('projectDir', input.trim());
-		vscode.window.showInformationMessage('Project directory set');
-	});
-	const noti = vscode.commands.registerCommand('woop.noti', async () => {
-		vscode.window.showInformationMessage('Workinggggggggg');
-	});
+	const removeProjectDir = vscode.commands.registerCommand(
+		'woop.removeProjectDir',
+		async () => {
+			const dirs = context.globalState.get<string[]>(
+				'projectDir',
+				[]
+			);
 
-	// VIEW CURRENT DIR
-	const viewDash = vscode.commands.registerCommand('woop.view', () => {
-		const path = context.globalState.get<string>('projectDir');
+			if (!dirs.length) {
+				vscode.window.showInformationMessage(
+					'No project directories to remove'
+				);
+				return;
+			}
 
-		if (!path) {
+			const picked = await vscode.window.showQuickPick(dirs, {
+				title: 'Remove Project Directory',
+				placeHolder: 'Select a directory to remove',
+			});
+
+			if (!picked) return;
+
+			const updated = dirs.filter(d => d !== picked);
+			await context.globalState.update('projectDir', updated);
+
 			vscode.window.showInformationMessage(
-				'No project dir set. Run "dash.setDash" first.'
+				'Project directory removed'
 			);
-			return;
 		}
+	);
 
-		vscode.window.showInformationMessage(`Current Dir: ${path}`);
-	});
+	/* ------------------ VIEW DIRS ------------------ */
 
-	// MAIN COMMAND
+	const viewDash = vscode.commands.registerCommand(
+		'woop.view',
+		() => {
+			const paths = context.globalState.get<string[]>(
+				'projectDir',
+				[]
+			);
+
+			if (!paths.length) {
+				vscode.window.showInformationMessage(
+					'No project dirs set'
+				);
+				return;
+			}
+
+			vscode.window.showInformationMessage(
+				paths.join('\n')
+			);
+		}
+	);
+
+	/* ------------------ DASH PICKER ------------------ */
+
 	const dash = vscode.commands.registerCommand('woop.dash', async () => {
-		const path = context.globalState.get<string>('projectDir');
+		const roots = context.globalState.get<string[]>(
+			'projectDir',
+			[]
+		);
 
-		if (!path) {
+		if (!roots.length) {
 			vscode.window.showErrorMessage(
-				'No project dir set. Run "dash.setDash" first.'
+				'No project dirs set'
 			);
 			return;
 		}
 
-		const baseUri = vscode.Uri.file(path);
+		const items: (vscode.QuickPickItem & {
+			uri?: vscode.Uri;
+		})[] = [];
 
-		// validate path exists
-		try {
-			await vscode.workspace.fs.stat(baseUri);
-		} catch {
-			vscode.window.showErrorMessage('Stored path does not exist');
-			return;
+		for (const root of roots) {
+			const rootUri = vscode.Uri.file(root);
+
+			try {
+				await vscode.workspace.fs.stat(rootUri);
+			} catch {
+				continue;
+			}
+
+			const title = rootUri.path.split('/').pop() ?? root;
+
+			items.push({
+				label: title,
+				kind: vscode.QuickPickItemKind.Separator,
+			});
+
+			const entries =
+				await vscode.workspace.fs.readDirectory(rootUri);
+
+			for (const [name, type] of entries) {
+				if (type !== vscode.FileType.Directory) continue;
+
+				items.push({
+					label: name,
+					description: root,
+					uri: vscode.Uri.joinPath(rootUri, name),
+				});
+			}
 		}
 
-		const folderUri = await pickDirectory(baseUri);
-		if (!folderUri) return;
-
-		await openFolderInCurrentWindow(folderUri);
-	});
-
-	context.subscriptions.push(setDash, viewDash, dash, runCmd);
-
-	/* ------------ helpers ------------ */
-
-	async function readDirectories(baseUri: vscode.Uri) {
-		const entries = await vscode.workspace.fs.readDirectory(baseUri);
-		return entries
-			.filter(([_, type]) => type === vscode.FileType.Directory)
-			.map(([name]) => name);
-	}
-
-	async function pickDirectory(baseUri: vscode.Uri) {
-		const dirs = await readDirectories(baseUri);
-
-		if (!dirs.length) {
-			vscode.window.showWarningMessage('No folders found');
-			return;
-		}
-
-		const selected = await vscode.window.showQuickPick(dirs, {
-			placeHolder: 'Select a folder to open'
+		const picked = await vscode.window.showQuickPick(items, {
+			placeHolder: 'Select a project',
 		});
 
-		if (!selected) return;
+		if (!picked?.uri) return;
 
-		return vscode.Uri.joinPath(baseUri, selected);
-	}
-
-	async function openFolderInCurrentWindow(folderUri: vscode.Uri) {
 		await vscode.commands.executeCommand(
 			'vscode.openFolder',
-			folderUri,
+			picked.uri,
 			false
 		);
-	}
+	});
+
+	/* ------------------ SUBSCRIPTIONS ------------------ */
+
+	context.subscriptions.push(
+		statusBarItem,
+		setProjectCmds,
+		dashGUI,
+		removeProjectDir,
+		viewDash,
+		dash,
+		menu,
+		runCmd
+	);
+
+	createStatusBarItems();
 }
 
-export function deactivate() { }
+export function deactivate() {}
