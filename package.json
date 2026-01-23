@@ -3,7 +3,7 @@
   "displayName": "woop",
   "publisher": "chattkush",
   "description": "Project launcher for VS Code",
-  "icon": "icon.png",
+  "icon": "",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/kush/Woop.git"
