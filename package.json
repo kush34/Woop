@@ -51,15 +51,15 @@
       },
       {
         "command": "woop.dash",
-        "title": "dash.dash: Open a Project"
+        "title": "Woop: Dash -> Open a Project"
       },
       {
         "command": "woop.setDash",
-        "title": "Set Project Dir"
+        "title": "Woop: Set Project Dir"
       },
       {
         "command": "woop.removeProjectDir",
-        "title": "Remove Project Dir"
+        "title": "Woop: Remove Project Dir"
       }
     ]
   },
@@ -72,13 +72,14 @@
     "test": "vscode-test"
   },
   "devDependencies": {
-    "@types/vscode": "^1.107.0",
+    "@types/jest": "^30.0.0",
     "@types/mocha": "^10.0.10",
-    "@types/node": "22.x",
-    "typescript-eslint": "^8.48.1",
+    "@types/node": "^22.19.17",
+    "@types/vscode": "^1.107.0",
+    "@vscode/test-cli": "^0.0.12",
+    "@vscode/test-electron": "^2.5.2",
     "eslint": "^9.39.1",
     "typescript": "^5.9.3",
-    "@vscode/test-cli": "^0.0.12",
-    "@vscode/test-electron": "^2.5.2"
+    "typescript-eslint": "^8.48.1"
   }
 }

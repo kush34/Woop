@@ -1,33 +1,92 @@
+# Woop 
 
-# Woop README
+Launch, switch, and run your projects directly from the VS Code status bar.
 
-* Use Woop to lanuch any project in the current code window.
-* set the project directory 
-* switch between projects quickly
+---
 
+## Features
 
-# Usage
+- **Project Switcher** — quickly open any project in the current window
+- **Status Bar Commands** — run dev servers, build tools, or any shell command from the status bar
+- **Auto-detect** — Woop scans your project and suggests commands based on your stack (Node, Python, Go, Rust, etc.)
+- **Live State Indicators** — see if a server is running, stopped, or errored at a glance
+- **One-click Stop / Restart** — kill or restart a process directly from the status bar
 
-### Dash
-- use dash.dash command to list all projects.
-- choose the project you want to work on.
-- press enter and seleted project will open on the current code window. 
+---
 
-![Alt text](https://raw.githubusercontent.com/kush34/Woop/refs/heads/main/public/dash.gif "DASH CMMD GIF")
+## Status Bar States
 
-### Set dir
-- use Set Dir to set the working dir where your projects are located.
+| Icon | Meaning | Click Action |
+|---|---|---|
+| `$(terminal) Label` | Idle | Run command |
+| `$(stop-circle) Label` | Running | Stop (Ctrl+C) |
+| `$(warning) Label` | Errored / Crashed | Restart |
 
-1) press ctrl + shift + p
-2) set dir command
-3) enter the path to your project directory
+---
 
-![Alt text](https://raw.githubusercontent.com/kush34/Woop/refs/heads/main/public/setDir.gif "SET CMMD GIF")
+## Usage
 
-### View
+### Dash — Switch Projects
+Open any saved project in the current window.
 
-1) press ctrl + shift + p.
-2) View dir command.
-3) you will get notificaiton for the path you set.
+1. `Ctrl+Shift+P` → `woop.dash`
+2. Select a project from the list
+3. Press Enter — project opens in current window
 
-![Alt text](https://raw.githubusercontent.com/kush34/Woop/refs/heads/main/public/view.gif "VIEW CMMD GIF")
+![Dash](https://raw.githubusercontent.com/kush34/Woop/refs/heads/main/public/dash.gif)
+
+---
+
+### Set Project Directory
+Point Woop to the folder where your projects live.
+
+1. `Ctrl+Shift+P` → `woop.setDash`
+2. Paste the absolute path to your projects folder
+
+![Set Dir](https://raw.githubusercontent.com/kush34/Woop/refs/heads/main/public/setDir.gif)
+
+---
+
+### View Saved Directories
+1. `Ctrl+Shift+P` → `woop.view`
+2. A notification shows all saved directories
+
+![View](https://raw.githubusercontent.com/kush34/Woop/refs/heads/main/public/view.gif)
+
+---
+
+### Auto-detect Commands
+When you open a project, Woop scans for known config files and suggests run commands.
+
+- Supports: Node/npm, React, Python (Django, Flask, FastAPI), Go, Rust, Laravel, Rails, Docker, and more
+- Detects subfolders like `/backend`, `/frontend`, `/api`, `/client` automatically
+- Select which commands to add → they appear in the status bar instantly
+
+---
+
+### Add Commands Manually
+1. Click `$(send)` in the status bar → **Add Command (manual)**
+2. Enter a label, command, and directory
+3. Command appears in the status bar
+
+---
+
+### Menu
+Click the `$(send)` icon in the bottom-right status bar to access all Woop actions.
+
+---
+
+## Supported Stacks (Auto-detect)
+
+| Stack | Detected File | Suggested Command |
+|---|---|---|
+| Node / npm | `package.json` | `npm run dev` / `npm start` |
+| Django | `manage.py` | `python manage.py runserver` |
+| Flask | `app.py` | `python app.py` |
+| FastAPI | `pyproject.toml` | `uvicorn main:app --reload` |
+| Go | `go.mod` | `go run .` |
+| Rust | `Cargo.toml` | `cargo run` |
+| Spring Boot | `pom.xml` | `mvn spring-boot:run` |
+| Laravel | `artisan` | `php artisan serve` |
+| Rails | `Gemfile` | `bundle exec rails server` |
+| Docker | `docker-compose.yml` | `docker-compose up` |
