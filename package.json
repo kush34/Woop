@@ -32,7 +32,27 @@
         }
       ]
     },
+    "keybindings": [
+      {
+        "command": "woop.nextProject",
+        "key": "ctrl+shift+alt+right",
+        "mac": "ctrl+shift+alt+right"
+      },
+      {
+        "command": "woop.prevProject",
+        "key": "ctrl+shift+alt+left",
+        "mac": "ctrl+shift+alt+left"
+      }
+    ],
     "commands": [
+      {
+        "command": "woop.nextProject",
+        "title": "Woop: Next Project"
+      },
+      {
+        "command": "woop.prevProject",
+        "title": "Woop: Previous Project"
+      },
       {
         "command": "woop.view",
         "title": "View Project Dir"

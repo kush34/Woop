@@ -85,6 +85,8 @@ async function readJson(uri: vscode.Uri): Promise<Record<string, any> | null> {
 	}
 }
 
+
+
 async function detectCommandsInDir(dirPath: string): Promise<DetectedSuggestion[]> {
 	const suggestions: DetectedSuggestion[] = [];
 	const dirUri = vscode.Uri.file(dirPath);
@@ -166,6 +168,43 @@ function labelToKey(label: string): string {
 ================================================================ */
 
 export function activate(context: vscode.ExtensionContext) {
+
+	const getProjectList = async (): Promise<string[]> => {
+		const roots = context.globalState.get<string[]>('projectDir', []);
+		const projects: string[] = [];
+
+		for (const root of roots) {
+			try {
+				const entries = await vscode.workspace.fs.readDirectory(vscode.Uri.file(root));
+				for (const [name, type] of entries) {
+					if (type === vscode.FileType.Directory) {
+						projects.push(path.join(root, name));
+					}
+				}
+			} catch { }
+		}
+		return projects;
+	};
+
+	const nextProject = vscode.commands.registerCommand('woop.nextProject', async () => {
+		const projects = await getProjectList();
+		if (!projects.length) { vscode.window.showInformationMessage('No projects found'); return; }
+
+		const current = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath.replace(/\/$/, '');
+		const idx = projects.findIndex(d => d.replace(/\/$/, '') === current);
+		const next = projects[(idx + 1) % projects.length];
+		await vscode.commands.executeCommand('vscode.openFolder', vscode.Uri.file(next), false);
+	});
+
+	const prevProject = vscode.commands.registerCommand('woop.prevProject', async () => {
+		const projects = await getProjectList();
+		if (!projects.length) { vscode.window.showInformationMessage('No projects found'); return; }
+
+		const current = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath.replace(/\/$/, '');
+		const idx = projects.findIndex(d => d.replace(/\/$/, '') === current);
+		const prev = projects[(idx - 1 + projects.length) % projects.length];
+		await vscode.commands.executeCommand('vscode.openFolder', vscode.Uri.file(prev), false);
+	});
 
 	/* ---------- STATE MIGRATION ---------- */
 	const storedProjectDir = context.globalState.get<any>('projectDir');
@@ -589,6 +628,8 @@ export function activate(context: vscode.ExtensionContext) {
 		viewDash,
 		dash,
 		menu,
+		nextProject,
+		prevProject,
 		setDash,
 		runCmd,
 		removeCmd,
