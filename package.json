@@ -8,7 +8,7 @@
     "type": "git",
     "url": "git+https://github.com/kush/Woop.git"
   },
-  "version": "0.1.10",
+  "version": "0.1.11",
   "engines": {
     "vscode": "^1.107.0"
   },
@@ -80,6 +80,10 @@
       {
         "command": "woop.removeProjectDir",
         "title": "Woop: Remove Project Dir"
+      },
+      {
+        "command": "woop.perf",
+        "title": "Woop: Show Performance"
       }
     ]
   },
@@ -89,7 +93,9 @@
     "watch": "tsc -watch -p ./",
     "pretest": "pnpm run compile && pnpm run lint",
     "lint": "eslint src",
-    "test": "vscode-test"
+    "test": "vscode-test",
+    "bench": "node bench/build.js && node bench/run.js && node bench/report.js",
+    "smoke": "node bench/smoke.js"
   },
   "devDependencies": {
     "@types/jest": "^30.0.0",

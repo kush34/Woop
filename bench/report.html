@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>woop · before / after</title>
+<style>
+	* { box-sizing: border-box; }
+	body { margin: 0; font-family: var(--font-sans, system-ui, sans-serif); color: var(--foreground, #ededed); }
+	.wrap { display: flex; flex-direction: column; gap: 18px; padding: 4px 0 8px; }
+	.head { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 18px; }
+	.hero { display: flex; flex-direction: column; gap: 2px; }
+	.hero b { font-size: 30px; letter-spacing: -0.02em; color: var(--foreground, #ededed); }
+	.legend { display: flex; gap: 16px; font-size: 12px; margin-left: auto; }
+	.sw { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 6px; }
+	.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 14px; }
+	.card { background: var(--card, #191919); border: 1px solid var(--border, #2b2b2b); border-radius: var(--radius, 8px); padding: 14px 16px; color: var(--foreground, #ededed); }
+	.card h3 { margin: 0 0 2px; font-size: 14px; }
+	.scale { font-size: 11.5px; margin-bottom: 12px; }
+	.row { display: grid; grid-template-columns: 1fr 86px; gap: 2px 10px; padding: 7px 0; border-top: 1px solid var(--border, #2b2b2b); }
+	.row:first-of-type { border-top: 0; }
+	.label { font-size: 12px; grid-column: 1 / -1; margin-bottom: 4px; }
+	.bars { display: flex; flex-direction: column; gap: 4px; }
+	.barline { display: flex; align-items: center; gap: 8px; min-width: 0; }
+	.bar { height: 9px; border-radius: 3px; flex: 0 0 auto; }
+	.before { background: var(--chart-4, #8b8b8b); opacity: .55; }
+	.after { background: var(--chart-2, #22d3ee); }
+	.val { font-size: 11.5px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+	.afterv { font-weight: 600; }
+	.gain { align-self: center; text-align: right; font-size: 12px; font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; }
+	.foot { font-size: 11.5px; line-height: 1.6; border-top: 1px solid var(--border, #2b2b2b); padding-top: 12px; }
+	.foot, .scale, .label, .beforev, .legend, .hero span { color: var(--foreground, #dddddd); opacity: .6; }
+	code { font-family: var(--font-mono, ui-monospace, monospace); font-size: 11px; background: var(--code-background, #262626); padding: 1px 5px; border-radius: 4px; }
+	</style></head>
+<body><div class="wrap">
+	<div class="head">
+		<div class="hero">
+			<b>dash: 141 ms → 0.02 ms</b>
+			<span>time until the project picker is on screen — before: after every directory is read; after: before any I/O starts</span>
+		</div>
+		<div class="legend">
+			<span><i class="sw" style="background:var(--chart-4);opacity:.55"></i>before (HEAD)</span>
+			<span><i class="sw" style="background:var(--chart-2)"></i>after</span>
+		</div>
+	</div>
+	<div class="grid"><section class="card">
+		<h3>1 root · 2,000 dirs · local SSD</h3>
+		<div class="scale">1 root · 0.5 ms per file-service call</div>
+		<div class="row">
+			<div class="label">dash · picker visible</div>
+			<div class="bars">
+				<div class="barline"><div class="bar before" style="width:max(2px, 100%)"></div><span class="val beforev">7.94 ms</span></div>
+				<div class="barline"><div class="bar after" style="width:max(2px, 0.27386526186921484%)"></div><span class="val afterv">0.02 ms</span></div>
+			</div>
+			<div class="gain">365×</div>
+		</div><div class="row">
+			<div class="label">dash · items populated</div>
+			<div class="bars">
+				<div class="barline"><div class="bar before" style="width:max(2px, 97.7871216771303%)"></div><span class="val beforev">7.94 ms</span></div>
+				<div class="barline"><div class="bar after" style="width:max(2px, 100%)"></div><span class="val afterv">8.11 ms</span></div>
+			</div>
+			<div class="gain">0.98×</div>
+		</div><div class="row">
+			<div class="label">dash · cached (2nd open)</div>
+			<div class="bars">
+				<div class="barline"><div class="bar before" style="width:max(2px, 100%)"></div><span class="val beforev">7.47 ms</span></div>
+				<div class="barline"><div class="bar after" style="width:max(2px, 28.441311709681276%)"></div><span class="val afterv">2.12 ms</span></div>
+			</div>
+			<div class="gain">3.52×</div>
+		</div><div class="row">
+			<div class="label">nextProject · cold</div>
+			<div class="bars">
+				<div class="barline"><div class="bar before" style="width:max(2px, 99.51245413348818%)"></div><span class="val beforev">7.00 ms</span></div>
+				<div class="barline"><div class="bar after" style="width:max(2px, 100%)"></div><span class="val afterv">7.03 ms</span></div>
+			</div>
+			<div class="gain">1.00×</div>
+		</div><div class="row">
+			<div class="label">nextProject · cached</div>
+			<div class="bars">
+				<div class="barline"><div class="bar before" style="width:max(2px, 100%)"></div><span class="val beforev">7.16 ms</span></div>
+				<div class="barline"><div class="bar after" style="width:max(2px, 5.694525211892891%)"></div><span class="val afterv">0.41 ms</span></div>
+			</div>
+			<div class="gain">17.6×</div>
+		</div>
+	</section><section class="card">
+		<h3>4 roots · 6,000 dirs · local SSD</h3>
+		<div class="scale">4 roots · 0.5 ms per file-service call</div>
+		<div class="row">
+			<div class="label">dash · picker visible</div>
+			<div class="bars">
+				<div class="barline"><div class="bar before" style="width:max(2px, 100%)"></div><span class="val beforev">26.4 ms</span></div>
+				<div class="barline"><div class="bar after" style="width:max(2px, 0.09984799470107762%)"></div><span class="val afterv">0.03 ms</span></div>
+			</div>
+			<div class="gain">1002×</div>
+		</div><div class="row">
+			<div class="label">dash · items populated</div>
+			<div class="bars">
+				<div class="barline"><div class="bar before" style="width:max(2px, 98.96773461784673%)"></div><span class="val beforev">26.4 ms</span></div>
+				<div class="barline"><div class="bar after" style="width:max(2px, 100%)"></div><span class="val afterv">26.6 ms</span></div>
+			</div>
+			<div class="gain">0.99×</div>
+		</div><div class="row">
+			<div class="label">dash · cached (2nd open)</div>
+			<div class="bars">
+				<div class="barline"><div class="bar before" style="width:max(2px, 100%)"></div><span class="val beforev">26.5 ms</span></div>
+				<div class="barline"><div class="bar after" style="width:max(2px, 20.074406588336945%)"></div><span class="val afterv">5.31 ms</span></div>
+			</div>
+			<div class="gain">4.98×</div>
+		</div><div class="row">
+			<div class="label">nextProject · cold</div>
+			<div class="bars">
+				<div class="barline"><div class="bar before" style="width:max(2px, 100%)"></div><span class="val beforev">23.7 ms</span></div>
+				<div class="barline"><div class="bar after" style="width:max(2px, 90.168482485433%)"></div><span class="val afterv">21.4 ms</span></div>
+			</div>
+			<div class="gain">1.11×</div>
+		</div><div class="row">
+			<div class="label">nextProject · cached</div>
+			<div class="bars">
+				<div class="barline"><div class="bar before" style="width:max(2px, 100%)"></div><span class="val beforev">23.0 ms</span></div>
+				<div class="barline"><div class="bar after" style="width:max(2px, 6.116465481165238%)"></div><span class="val afterv">1.41 ms</span></div>
+			</div>
+			<div class="gain">16.3×</div>
+		</div>
+	</section><section class="card">
+		<h3>4 roots · 6,000 dirs · 15 ms per file-service call</h3>
+		<div class="scale">4 roots · 15 ms per file-service call</div>
+		<div class="row">
+			<div class="label">dash · picker visible</div>
+			<div class="bars">
+				<div class="barline"><div class="bar before" style="width:max(2px, 100%)"></div><span class="val beforev">141 ms</span></div>
+				<div class="barline"><div class="bar after" style="width:max(2px, 0.0161858442247151%)"></div><span class="val afterv">0.02 ms</span></div>
+			</div>
+			<div class="gain">6178×</div>
+		</div><div class="row">
+			<div class="label">dash · items populated</div>
+			<div class="bars">
+				<div class="barline"><div class="bar before" style="width:max(2px, 100%)"></div><span class="val beforev">141 ms</span></div>
+				<div class="barline"><div class="bar after" style="width:max(2px, 24.948489366879734%)"></div><span class="val afterv">35.2 ms</span></div>
+			</div>
+			<div class="gain">4.01×</div>
+		</div><div class="row">
+			<div class="label">dash · cached (2nd open)</div>
+			<div class="bars">
+				<div class="barline"><div class="bar before" style="width:max(2px, 100%)"></div><span class="val beforev">142 ms</span></div>
+				<div class="barline"><div class="bar after" style="width:max(2px, 2.7921881649553386%)"></div><span class="val afterv">3.95 ms</span></div>
+			</div>
+			<div class="gain">35.8×</div>
+		</div><div class="row">
+			<div class="label">nextProject · cold</div>
+			<div class="bars">
+				<div class="barline"><div class="bar before" style="width:max(2px, 100%)"></div><span class="val beforev">80.3 ms</span></div>
+				<div class="barline"><div class="bar after" style="width:max(2px, 40.70936367580029%)"></div><span class="val afterv">32.7 ms</span></div>
+			</div>
+			<div class="gain">2.46×</div>
+		</div><div class="row">
+			<div class="label">nextProject · cached</div>
+			<div class="bars">
+				<div class="barline"><div class="bar before" style="width:max(2px, 100%)"></div><span class="val beforev">80.2 ms</span></div>
+				<div class="barline"><div class="bar after" style="width:max(2px, 1.1906558029721874%)"></div><span class="val afterv">0.96 ms</span></div>
+			</div>
+			<div class="gain">84.0×</div>
+		</div>
+	</section></div>
+	<div class="foot">
+		Method: the real <code>activate()</code> from HEAD and from the working tree, driven through the same fake <code>vscode</code> API against
+		real directories on disk. 7 iterations per metric, median. "per-file-service call" models the extension-host round trip; 0.5 ms is a local SSD,
+		15 ms is a WSL / network / slow-disk share. <code>dash</code> stops after the picker returns a selection; the window reload after
+		<code>vscode.openFolder</code> is VS Code's own cost and is not counted.
+	</div>
+</div></body></html>
