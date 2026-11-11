@@ -638,7 +638,7 @@ export function activate(context: vscode.ExtensionContext) {
 			perf.mark('dash · items ready', tFill);
 		};
 
-		const refresh = qp.onDidTriggerButton(() => {
+		qp.onDidTriggerButton(() => {
 			dirCache.clear();
 			qp.busy = true;
 			void fill();
@@ -646,7 +646,6 @@ export function activate(context: vscode.ExtensionContext) {
 
 		void fill();
 		const picked = await done;
-		refresh.dispose();
 		qp.dispose();
 		if (!picked?.uri) return;
 

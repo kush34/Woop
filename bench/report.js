@@ -19,7 +19,7 @@ const scenarioCards = results.scenarios.map(s => {
 		const before = pick(s.before);
 		const after = pick(s.after);
 		const max = Math.max(before, after, 0.001);
-		const w = v => `max(${v === 0 ? 0 : 2}px, ${(v / max) * 100}%)`;
+		const w = v => `max(2px, ${(v / max) * 100}%)`;
 		return `<div class="row">
 			<div class="label">${label}</div>
 			<div class="bars">
@@ -37,10 +37,7 @@ const scenarioCards = results.scenarios.map(s => {
 	</section>`;
 }).join('');
 
-const headline = (() => {
-	const s = results.scenarios[results.scenarios.length - 1];
-	return { before: s.before.dash.coldVisible, after: s.after.dash.coldVisible };
-})();
+const last = results.scenarios[results.scenarios.length - 1];
 
 const html = `<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><title>woop · before / after</title>
@@ -75,7 +72,7 @@ const html = `<!doctype html>
 <body><div class="wrap">
 	<div class="head">
 		<div class="hero">
-			<b>dash: ${fmt(headline.before)} ms → ${fmt(headline.after)} ms</b>
+			<b>dash: ${fmt(last.before.dash.coldVisible)} ms → ${fmt(last.after.dash.coldVisible)} ms</b>
 			<span>time until the project picker is on screen — before: after every directory is read; after: before any I/O starts</span>
 		</div>
 		<div class="legend">
@@ -86,7 +83,7 @@ const html = `<!doctype html>
 	<div class="grid">${scenarioCards}</div>
 	<div class="foot">
 		Method: the real <code>activate()</code> from HEAD and from the working tree, driven through the same fake <code>vscode</code> API against
-		real directories on disk. 7 iterations per metric, median. "per-file-service call" models the extension-host round trip; 0.5 ms is a local SSD,
+		real directories on disk. 15 iterations per metric, median. "per-file-service call" models the extension-host round trip; 0.5 ms is a local SSD,
 		15 ms is a WSL / network / slow-disk share. <code>dash</code> stops after the picker returns a selection; the window reload after
 		<code>vscode.openFolder</code> is VS Code's own cost and is not counted.
 	</div>

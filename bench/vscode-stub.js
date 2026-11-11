@@ -5,9 +5,7 @@ const fs = require('fs');
 const fsp = fs.promises;
 const path = require('path');
 
-const RPC_MS_DEFAULT = Number(process.env.WOOP_RPC_MS ?? 0);
-let RPC_MS = RPC_MS_DEFAULT;
-const bench = {
+let RPC_MS = Number(process.env.WOOP_RPC_MS ?? 0);const bench = {
 	now: () => performance.now(),
 	pickerShownAt: null,
 	itemsReadyAt: null,
@@ -25,22 +23,11 @@ const Uri = {
 };
 
 const FileType = { Unknown: 0, File: 1, Directory: 2, SymbolicLink: 64 };
-const FileStat = class {};
 
 const globalState = new Map();
 const workspaceState = new Map();
-const api = {
-	get: (k, d) => (globalState.has(k) ? globalState.get(k) : d),
-	update: async (k, v) => { globalState.set(k, v); },
-	keys: () => [...globalState.keys()],
-};
-const wsApi = {
-	get: (k, d) => (workspaceState.has(k) ? workspaceState.get(k) : d),
-	update: async (k, v) => { workspaceState.set(k, v); },
-};
 
 const commands = new Map();
-const pickers = [];
 
 class QuickPick {
 	constructor() {
@@ -54,7 +41,6 @@ class QuickPick {
 		this.visible = false;
 		this.placeholder = '';
 		this._accepted = false;
-		pickers.push(this);
 	}
 	get items() { return this._items; }
 	set items(v) {
@@ -88,11 +74,9 @@ const window = {
 	createStatusBarItem: statusBarItem,
 	createTerminal: () => ({ show() {}, sendText() {}, dispose() {}, name: 't' }),
 	onDidCloseTerminal: dispose,
-	onDidOpenTerminal: dispose,
 	terminals: [],
 	showInformationMessage: async () => undefined,
 	showErrorMessage: async () => undefined,
-	showWarningMessage: async () => undefined,
 	showInputBox: async () => undefined,
 	showOpenDialog: async () => undefined,
 	createOutputChannel: () => ({ appendLine() {}, append() {}, show() {}, dispose() {} }),
@@ -104,13 +88,11 @@ const window = {
 		return list.find(i => i.uri) ?? list[0];
 	},
 	createQuickPick: () => new QuickPick(),
-	withProgress: async (_o, task) => task({ report() {} }, { isCancellationRequested: false, onCancellationRequested: dispose }),
 };
 
 module.exports = {
 	Uri,
 	FileType,
-	FileStat,
 	workspace: {
 		fs: {
 			stat: async uri => { await rpc(); await fsp.stat(uri.fsPath); return {}; },
@@ -122,9 +104,6 @@ module.exports = {
 			},
 		},
 		workspaceFolders: undefined,
-		getConfiguration: () => ({ get: () => undefined }),
-		createFileSystemWatcher: () => ({ onDidChange: dispose, onDidCreate: dispose, onDidDelete: dispose, dispose() {} }),
-		onDidChangeWorkspaceFolders: dispose,
 	},
 	window,
 	commands: {
@@ -140,11 +119,8 @@ module.exports = {
 	ThemeColor: class { constructor(id) { this.id = id; } },
 	ThemeIcon: class { constructor(id) { this.id = id; } },
 	QuickPickItemKind: { Separator: -1, Default: 0 },
-	ProgressLocation: { Notification: 15 },
-	ExtensionMode: { Production: 1 },
 	__bench: bench,
 	__commands: commands,
-	__pickers: pickers,
 	__resetGlobalState: () => globalState.clear(),
 	__globalState: globalState,
 	__workspaceState: workspaceState,

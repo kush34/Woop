@@ -108,8 +108,7 @@ async function measureVersion(modPath, scenario) {
 		console.table({ before: flatten(before), after: flatten(after) });
 	}
 
-	const outIdx = process.argv.indexOf('--json');
-	const out = outIdx > -1 ? process.argv[outIdx + 1] : path.join(__dirname, 'results.json');
+	const out = path.join(__dirname, 'results.json');
 	require('fs').writeFileSync(out, JSON.stringify(results, null, 2));
 	console.log('wrote', out);
 	process.exit(0);
