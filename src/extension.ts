@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
+import * as perf from './perf';
 
 /* ================================================================
    TYPES
@@ -169,25 +170,39 @@ function labelToKey(label: string): string {
 
 export function activate(context: vscode.ExtensionContext) {
 
+	// Cached per session; the dash picker's refresh button clears it.
+	const dirCache = new Map<string, string[]>();
+
+	const listDirs = async (root: string): Promise<string[]> => {
+		const cached = dirCache.get(root);
+		if (cached) {
+			return cached;
+		}
+
+		let entries: [string, vscode.FileType][];
+		try {
+			entries = await vscode.workspace.fs.readDirectory(vscode.Uri.file(root));
+		} catch {
+			return []; // root missing/unreadable — don't cache the failure
+		}
+
+		const dirs = entries
+			.filter(([, type]) => type === vscode.FileType.Directory)
+			.map(([name]) => path.join(root, name));
+		dirCache.set(root, dirs);
+		return dirs;
+	};
+
 	const getProjectList = async (): Promise<string[]> => {
 		const roots = context.globalState.get<string[]>('projectDir', []);
-		const projects: string[] = [];
-
-		for (const root of roots) {
-			try {
-				const entries = await vscode.workspace.fs.readDirectory(vscode.Uri.file(root));
-				for (const [name, type] of entries) {
-					if (type === vscode.FileType.Directory) {
-						projects.push(path.join(root, name));
-					}
-				}
-			} catch { }
-		}
-		return projects;
+		const groups = await Promise.all(roots.map(listDirs));
+		return groups.flat();
 	};
 
 	const nextProject = vscode.commands.registerCommand('woop.nextProject', async () => {
+		const t0 = perf.start();
 		const projects = await getProjectList();
+		perf.mark('nextProject', t0);
 		if (!projects.length) { vscode.window.showInformationMessage('No projects found'); return; }
 
 		const current = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath.replace(/\/$/, '');
@@ -197,7 +212,9 @@ export function activate(context: vscode.ExtensionContext) {
 	});
 
 	const prevProject = vscode.commands.registerCommand('woop.prevProject', async () => {
+		const t0 = perf.start();
 		const projects = await getProjectList();
+		perf.mark('prevProject', t0);
 		if (!projects.length) { vscode.window.showInformationMessage('No projects found'); return; }
 
 		const current = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath.replace(/\/$/, '');
@@ -489,6 +506,7 @@ export function activate(context: vscode.ExtensionContext) {
 				{ label: '$(folder-opened) Add Project Dir', action: 'add' },
 				{ label: '$(folder) Remove Project Dir', action: 'remove' },
 				{ label: '$(list-unordered) View Dirs', action: 'view' },
+				{ label: '$(pulse) Show Performance', action: 'perf' },
 			],
 			{ title: 'Woop Menu', placeHolder: 'Choose an action' }
 		);
@@ -510,6 +528,7 @@ export function activate(context: vscode.ExtensionContext) {
 			case 'add': vscode.commands.executeCommand('woop.dashGUI'); break;
 			case 'remove': vscode.commands.executeCommand('woop.removeProjectDir'); break;
 			case 'view': vscode.commands.executeCommand('woop.view'); break;
+			case 'perf': vscode.commands.executeCommand('woop.perf'); break;
 		}
 	});
 
@@ -584,22 +603,50 @@ export function activate(context: vscode.ExtensionContext) {
 		const roots = context.globalState.get<string[]>('projectDir', []);
 		if (!roots.length) { vscode.window.showErrorMessage('No project dirs set'); return; }
 
-		const items: (vscode.QuickPickItem & { uri?: vscode.Uri })[] = [];
+		type ProjectItem = vscode.QuickPickItem & { uri?: vscode.Uri };
 
-		for (const root of roots) {
-			const rootUri = vscode.Uri.file(root);
-			try { await vscode.workspace.fs.stat(rootUri); } catch { continue; }
+		const t0 = perf.start();
+		const qp = vscode.window.createQuickPick<ProjectItem>();
 
-			items.push({ label: rootUri.path.split('/').pop() ?? root, kind: vscode.QuickPickItemKind.Separator });
+		// Resolve on accept/hide so the picker is shown before any I/O starts.
+		const done = new Promise<ProjectItem | undefined>(resolve => {
+			qp.onDidAccept(() => {
+				const picked = qp.selectedItems[0];
+				if (picked) resolve(picked); // ignore Enter while the list is still empty
+			});
+			qp.onDidHide(() => resolve(undefined));
+		});
 
-			const entries = await vscode.workspace.fs.readDirectory(rootUri);
-			for (const [name, type] of entries) {
-				if (type !== vscode.FileType.Directory) continue;
-				items.push({ label: name, description: root, uri: vscode.Uri.joinPath(rootUri, name) });
+		qp.placeholder = 'Select a project';
+		qp.busy = true;
+		qp.buttons = [{ iconPath: new vscode.ThemeIcon('refresh'), tooltip: 'Re-index project dirs' }];
+		qp.show();
+		perf.mark('dash · picker visible', t0);
+
+		const fill = async () => {
+			const tFill = perf.start();
+			const groups = await Promise.all(roots.map(async root => ({ root, dirs: await listDirs(root) })));
+			const items: ProjectItem[] = [];
+			for (const { root, dirs } of groups) {
+				items.push({ label: path.basename(root), kind: vscode.QuickPickItemKind.Separator });
+				for (const dir of dirs) {
+					items.push({ label: path.basename(dir), description: root, uri: vscode.Uri.file(dir) });
+				}
 			}
-		}
+			qp.items = items;
+			qp.busy = false;
+			perf.mark('dash · items ready', tFill);
+		};
 
-		const picked = await vscode.window.showQuickPick(items, { placeHolder: 'Select a project' });
+		qp.onDidTriggerButton(() => {
+			dirCache.clear();
+			qp.busy = true;
+			void fill();
+		});
+
+		void fill();
+		const picked = await done;
+		qp.dispose();
 		if (!picked?.uri) return;
 
 		await vscode.commands.executeCommand('vscode.openFolder', picked.uri, false);
@@ -615,6 +662,8 @@ export function activate(context: vscode.ExtensionContext) {
 		}
 		vscode.window.showInformationMessage('Project directory set');
 	});
+
+	const showPerf = vscode.commands.registerCommand('woop.perf', perf.report);
 
 	/* ================================================================
 	   SUBSCRIPTIONS
@@ -633,6 +682,7 @@ export function activate(context: vscode.ExtensionContext) {
 		setDash,
 		runCmd,
 		removeCmd,
+		showPerf,
 	);
 
 	createStatusBarItems();

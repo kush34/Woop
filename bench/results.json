@@ -1,0 +1,110 @@
+{
+  "scenarios": [
+    {
+      "id": "1root-local",
+      "label": "1 root · 2,000 dirs · local SSD",
+      "rpc": 0.5,
+      "roots": 1,
+      "before": {
+        "dash": {
+          "coldVisible": 8.207067999999992,
+          "coldItems": 8.207067999999992,
+          "coldTotal": 8.225957999999991,
+          "warmVisible": 7.766216999999983,
+          "warmItems": 7.766216999999983,
+          "warmTotal": 7.77569699999998
+        },
+        "nextProject": {
+          "cold": 6.693548999999962,
+          "warm": 7.104204000000038
+        }
+      },
+      "after": {
+        "dash": {
+          "coldVisible": 0.029794999999921856,
+          "coldItems": 9.502374999999915,
+          "coldTotal": 10.842245999999932,
+          "warmVisible": 0.040860999999949854,
+          "warmItems": 1.26897299999996,
+          "warmTotal": 2.3446400000000267
+        },
+        "nextProject": {
+          "cold": 7.8991700000000264,
+          "warm": 0.499883000000068
+        }
+      }
+    },
+    {
+      "id": "4root-local",
+      "label": "4 roots · 6,000 dirs · local SSD",
+      "rpc": 0.5,
+      "roots": 4,
+      "before": {
+        "dash": {
+          "coldVisible": 29.603895000000193,
+          "coldItems": 29.603895000000193,
+          "coldTotal": 29.620901000000003,
+          "warmVisible": 30.419482000000016,
+          "warmItems": 30.419482000000016,
+          "warmTotal": 30.495389999999816
+        },
+        "nextProject": {
+          "cold": 26.658740999999964,
+          "warm": 27.3596849999999
+        }
+      },
+      "after": {
+        "dash": {
+          "coldVisible": 0.018608999999742082,
+          "coldItems": 15.998704000000089,
+          "coldTotal": 17.771742999999788,
+          "warmVisible": 0.03615399999989677,
+          "warmItems": 2.6416920000001483,
+          "warmTotal": 3.83724600000005
+        },
+        "nextProject": {
+          "cold": 16.11347599999999,
+          "warm": 0.8887359999998807
+        }
+      }
+    },
+    {
+      "id": "4root-slow",
+      "label": "4 roots · 6,000 dirs · 15 ms per file-service call",
+      "rpc": 15,
+      "roots": 4,
+      "before": {
+        "dash": {
+          "coldVisible": 142.89275100000032,
+          "coldItems": 142.89275100000032,
+          "coldTotal": 142.91071499999998,
+          "warmVisible": 141.99164399999972,
+          "warmItems": 141.99164399999972,
+          "warmTotal": 142.06536699999924
+        },
+        "nextProject": {
+          "cold": 83.25190400000065,
+          "warm": 82.43779900000027
+        }
+      },
+      "after": {
+        "dash": {
+          "coldVisible": 0.022492000000056578,
+          "coldItems": 30.93492000000151,
+          "coldTotal": 33.26683400000002,
+          "warmVisible": 0.04299600000013015,
+          "warmItems": 2.641892999999982,
+          "warmTotal": 3.8847659999992175
+        },
+        "nextProject": {
+          "cold": 30.735321000000113,
+          "warm": 1.2238670000006096
+        }
+      }
+    }
+  ],
+  "meta": {
+    "iterations": 15,
+    "measuredAt": "2026-11-11T09:19:29.044Z"
+  }
+}
